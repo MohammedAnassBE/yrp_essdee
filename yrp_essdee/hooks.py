@@ -5,6 +5,13 @@ app_description = "YRP Essdee"
 app_email = "mohammedanasman123@gmail.com"
 app_license = "mit"
 
+fixtures = [
+	{
+		"dt": "Custom Field",
+		"filters": [["module", "=", "YRP Essdee"]],
+	},
+]
+
 # Apps
 # ------------------
 
@@ -90,8 +97,6 @@ doctype_js = {
 
 # before_install = "yrp_essdee.install.before_install"
 # after_install = "yrp_essdee.install.after_install"
-
-after_migrate = ["yrp_essdee.setup.custom_fields.install"]
 
 # Uninstallation
 # ------------
