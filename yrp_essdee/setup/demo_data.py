@@ -58,11 +58,71 @@ ACCESSORY_SPECS = [
 ]
 
 SUPPLIERS = [
-	{"supplier_name": "Essdee Main Unit", "is_company_location": 1},
-	{"supplier_name": "Cutting Vendor", "is_company_location": 0},
-	{"supplier_name": "Fusing Vendor", "is_company_location": 0},
-	{"supplier_name": "Stitching Vendor", "is_company_location": 0},
-	{"supplier_name": "Packing Vendor", "is_company_location": 0},
+	{
+		"supplier_name": "Essdee Main Unit",
+		"is_company_location": 1,
+		"address": {
+			"address_line1": "12 Textile Park Road",
+			"address_line2": "Main Production Block",
+			"city": "Tiruppur",
+			"state": "Tamil Nadu",
+			"pincode": "641604",
+			"phone": "0421-2451001",
+			"email_id": "stores@essdee.example",
+		},
+	},
+	{
+		"supplier_name": "Cutting Vendor",
+		"is_company_location": 0,
+		"address": {
+			"address_line1": "24 Pattern Layout Street",
+			"address_line2": "Cutting Unit",
+			"city": "Tiruppur",
+			"state": "Tamil Nadu",
+			"pincode": "641602",
+			"phone": "0421-2451002",
+			"email_id": "cutting.vendor@example.com",
+		},
+	},
+	{
+		"supplier_name": "Fusing Vendor",
+		"is_company_location": 0,
+		"address": {
+			"address_line1": "8 Industrial Estate Road",
+			"address_line2": "Fusing Section",
+			"city": "Avinashi",
+			"state": "Tamil Nadu",
+			"pincode": "641654",
+			"phone": "04296-245103",
+			"email_id": "fusing.vendor@example.com",
+		},
+	},
+	{
+		"supplier_name": "Stitching Vendor",
+		"is_company_location": 0,
+		"address": {
+			"address_line1": "41 Needle Works Avenue",
+			"address_line2": "Line A",
+			"city": "Tiruppur",
+			"state": "Tamil Nadu",
+			"pincode": "641603",
+			"phone": "0421-2451004",
+			"email_id": "stitching.vendor@example.com",
+		},
+	},
+	{
+		"supplier_name": "Packing Vendor",
+		"is_company_location": 0,
+		"address": {
+			"address_line1": "17 Dispatch Nagar",
+			"address_line2": "Packing Bay",
+			"city": "Tiruppur",
+			"state": "Tamil Nadu",
+			"pincode": "641605",
+			"phone": "0421-2451005",
+			"email_id": "packing.vendor@example.com",
+		},
+	},
 ]
 
 LEGACY_PRODUCT_NAMES = [
@@ -255,6 +315,7 @@ def verify_demo_data():
 	_assert(len(lot_names) == 5, f"Expected 5 Lots, found {len(lot_names)}")
 	_assert_no_legacy_demo_tag()
 
+	supplier_address_checks = _verify_supplier_addresses(suppliers)
 	attribute_checks = _verify_attribute_values()
 	product_attribute_checks = _verify_product_attribute_mappings(product_items)
 	accessory_attribute_checks = _verify_accessory_attribute_mappings(accessory_items)
@@ -323,6 +384,7 @@ def verify_demo_data():
 		"products": len(product_items),
 		"accessories": len(accessory_items),
 		"suppliers": len(suppliers),
+		"supplier_addresses": supplier_address_checks,
 		"production_orders": len(production_orders),
 		"attribute_checks": attribute_checks,
 		"product_attribute_mappings": product_attribute_checks,
@@ -476,6 +538,32 @@ def _assert_no_legacy_demo_tag():
 		not (tagged_items or tagged_suppliers or tagged_warehouses),
 		f"Legacy YRP Demo records still exist: {tagged_items + tagged_suppliers + tagged_warehouses}",
 	)
+
+
+def _verify_supplier_addresses(suppliers):
+	checks = []
+	for supplier in suppliers:
+		addresses = frappe.get_all(
+			"Address",
+			filters=[
+				["Dynamic Link", "link_doctype", "=", "Supplier"],
+				["Dynamic Link", "link_name", "=", supplier.name],
+				["Dynamic Link", "parenttype", "=", "Address"],
+				["Address", "disabled", "=", 0],
+				["Address", "is_primary_address", "=", 1],
+			],
+			fields=["name", "city", "state", "pincode"],
+			limit=1,
+		)
+		_assert(addresses, f"{supplier.supplier_name} does not have a primary supplier address")
+		checks.append({
+			"supplier": supplier.supplier_name,
+			"address": addresses[0].name,
+			"city": addresses[0].city,
+			"state": addresses[0].state,
+			"pincode": addresses[0].pincode,
+		})
+	return checks
 
 
 def _verify_product_attribute_mappings(product_items):
@@ -654,6 +742,7 @@ def _seed_suppliers():
 		doc.disabled = 0
 		doc.save(ignore_permissions=True)
 		created[spec["supplier_name"]] = doc.name
+		_ensure_supplier_address(doc.name, spec)
 
 	for spec in SUPPLIERS:
 		warehouse = f"{spec['supplier_name']} Warehouse"
@@ -664,6 +753,45 @@ def _seed_suppliers():
 			wdoc.disabled = 0
 			wdoc.insert(ignore_permissions=True)
 	return created
+
+
+def _ensure_supplier_address(supplier, spec):
+	address_spec = spec.get("address") or {}
+	if not address_spec:
+		return None
+
+	existing = frappe.get_all(
+		"Address",
+		filters=[
+			["Dynamic Link", "link_doctype", "=", "Supplier"],
+			["Dynamic Link", "link_name", "=", supplier],
+			["Dynamic Link", "parenttype", "=", "Address"],
+			["Address", "address_type", "=", "Office"],
+		],
+		pluck="name",
+		limit=1,
+	)
+	doc = frappe.get_doc("Address", existing[0]) if existing else frappe.new_doc("Address")
+	doc.address_title = spec["supplier_name"]
+	doc.address_type = "Office"
+	doc.address_line1 = address_spec["address_line1"]
+	doc.address_line2 = address_spec.get("address_line2")
+	doc.city = address_spec["city"]
+	doc.state = address_spec.get("state")
+	doc.country = address_spec.get("country") or "India"
+	doc.pincode = address_spec.get("pincode")
+	doc.phone = address_spec.get("phone")
+	doc.email_id = address_spec.get("email_id")
+	doc.is_primary_address = 1
+	doc.is_shipping_address = 1
+	doc.disabled = 0
+	if not existing:
+		doc.append("links", {
+			"link_doctype": "Supplier",
+			"link_name": supplier,
+		})
+	doc.save(ignore_permissions=True)
+	return doc.name
 
 
 def _seed_product_items():
