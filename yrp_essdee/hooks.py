@@ -26,7 +26,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/yrp_essdee/css/yrp_essdee.css"
-# app_include_js = "/assets/yrp_essdee/js/yrp_essdee.js"
+app_include_js = ["yrp_essdee.bundle.js"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/yrp_essdee/css/yrp_essdee.css"
@@ -43,7 +43,10 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+	"Production Order": "public/js/production_order.js",
+	"Item Production Detail": "public/js/item_production_detail.js",
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -87,6 +90,8 @@ app_license = "mit"
 
 # before_install = "yrp_essdee.install.before_install"
 # after_install = "yrp_essdee.install.after_install"
+
+after_migrate = ["yrp_essdee.setup.custom_fields.install"]
 
 # Uninstallation
 # ------------
@@ -139,6 +144,19 @@ app_license = "mit"
 # 		"on_trash": "method"
 # 	}
 # }
+
+doc_events = {
+	"Production Order": {
+		"validate": "yrp_essdee.overrides.production_order.validate",
+		"before_submit": "yrp_essdee.overrides.production_order.before_submit",
+	},
+	"Item Production Detail": {
+		"before_validate": "yrp_essdee.overrides.item_production_detail.before_validate",
+		"validate": "yrp_essdee.overrides.item_production_detail.validate",
+		"onload": "yrp_essdee.overrides.item_production_detail.onload",
+		"on_update": "yrp_essdee.overrides.item_production_detail.on_update",
+	},
+}
 
 # Scheduled Tasks
 # ---------------
@@ -249,4 +267,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

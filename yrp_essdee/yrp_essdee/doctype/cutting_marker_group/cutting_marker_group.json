@@ -1,0 +1,26 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-05-22 16:33:32.378839",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": ["group_panels"],
+ "fields": [
+  {"fieldname": "group_panels", "fieldtype": "Small Text", "in_list_view": 1, "label": "Group Panels"}
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-04 00:00:00",
+ "modified_by": "Administrator",
+ "module": "YRP Essdee",
+ "name": "Cutting Marker Group",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
