@@ -53,6 +53,7 @@ app_include_js = ["yrp_essdee.bundle.js"]
 doctype_js = {
 	"Production Order": "public/js/production_order.js",
 	"Item Production Detail": "public/js/item_production_detail.js",
+	"Work Order": "public/js/work_order.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
